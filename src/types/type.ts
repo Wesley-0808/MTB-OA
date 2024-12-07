@@ -55,3 +55,16 @@ export type RequestHooksOptions = {
   error?: Function,
   complete?: Function
 }
+
+export interface PermissionsObject {
+  id?: number,
+  object?: string,
+  type?: "system" | "groupid" | "userid",
+  val?: string,
+  open?: number | boolean,
+  remark?: string | null,
+}
+
+export type PermissionsArray = PermissionsObject[]
+
+export type PermissionsTransferType = "target" | "source"
