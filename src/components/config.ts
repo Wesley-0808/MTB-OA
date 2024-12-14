@@ -97,14 +97,14 @@ const routerMap:RouteMaps = [
                         key: "EqList",
                         label: "设备列表",
                         permissions: ['equipment.list'],
-                        component: () => import('../pages/equipment/list.vue')
+                        component: () => import('../pages/manage/eqList.vue')
                     },
                     {
                         key: "EqCheck",
                         label: "设备清点",
                         hidden: true,
                         permissions: ['equipment.check'],
-                        component: () => import('../pages/equipment/check.vue')
+                        component: () => import('../pages/manage/eqCheck.vue')
                     }
                 ]
             },
@@ -153,8 +153,8 @@ const routerMap:RouteMaps = [
                     },
                     {
                         key: "RequestLog",
-                        label: "用户日志",
-                        permissions: ['log.user'],
+                        label: "请求日志",
+                        permissions: ['log.request'],
                         component: () => import('../pages/log/request.vue')
                     }
                 ]

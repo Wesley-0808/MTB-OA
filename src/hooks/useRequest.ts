@@ -44,7 +44,6 @@ export function useRequest(option: RequestHooksOptions) {
             if(Object.prototype.toString.call(option) !== '[object Object]') resolve(false);
             
             option.methods = option.methods ? option.methods.toUpperCase() : 'GET';
-            console.log(option.data)
             option.data = SpliceParameter(option.data) || null;
             option.header = option.header || {};
             option.timeout = option.timeout || 60000;

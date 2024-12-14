@@ -21,15 +21,10 @@ export function getUserPermissions() {
 }
 
 export function loadUserPermissions(): Promise<Array<string>|string> {
-    const TOKEN = getToken()
     return new Promise((resolve, reject) => {
         useRequest({
             url: "/permissions/userHasPermissions",
             methods: "POST",
-            header: {
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                token: TOKEN,
-            },
             success: function (res) {
                 var RES = JSON.parse(res);
                 if (RES.errcode == 0) {
@@ -42,6 +37,50 @@ export function loadUserPermissions(): Promise<Array<string>|string> {
                 console.error(err);
                 reject(err)
             },
+        })
+    })
+}
+
+export function loadSystemPermissions() {
+    return new Promise((resolve, reject) => {
+        useRequest({
+            url: "/permissions/systemlist",
+            methods: "POST",
+            success: function (res) {
+                var RES = JSON.parse(res);
+                if (RES.errcode == 0) {
+                    resolve(RES.data)
+                }
+                else {
+                    reject(RES)
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                reject(err)
+            }
+        })
+    })
+}
+
+export function loadUserPermissionsList() {
+    return new Promise((resolve, reject) => {
+        useRequest({
+            url: "/permissions/userlist",
+            methods: "POST",
+            success: function (res) {
+                var RES = JSON.parse(res);
+                if (RES.errcode == 0) {
+                    resolve(RES.data)
+                }
+                else {
+                    reject(RES)
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                reject(err)
+            }
         })
     })
 }

@@ -25,6 +25,7 @@ const table_Columns = [
     { colKey: "lendtime", title: "借出时间", width: "220",align: "center" },
     { colKey: "returner", title: "归还人", width: "160",align: "center" },
     { colKey: "returntime", title: "归还时间", width: "220",align: "center" },
+    { colKey: "remark", title: "备注", align: "center" },
     {
         colKey: "status", title: "状态", width: "240",align: "center",
         cell: (h, { row }) => {

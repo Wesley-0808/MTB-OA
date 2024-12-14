@@ -1,8 +1,9 @@
-import { defineComponent, ref, toRefs, watch, computed } from "vue";
+import { defineComponent, ref, toRefs, watch, computed, h } from "vue";
 import { taskStatus, taskType } from "../../hooks/common";
+import { Table } from "tdesign-vue-next";
 
 export default defineComponent({
-    name: "Menu",
+    name: "TaskListRender",
     props: {
         data: {
             type: Object,
@@ -210,11 +211,16 @@ export default defineComponent({
         };
         
         const renderInner = (item) => {
+            const renderTable = renderTagAndTable(item)
             return (
                 <div class="Table--view">
-                    <t-table class="hidden--body" columns={TableColumns[item]} bordered></t-table>
+                    { 
+                        h(Table, { class: renderTable.length !== 0 ? 'hidden--body' : null, columns: TableColumns[item], bordered: true }, {
+                            empty: () => "暂时没有任务哦！",
+                        })
+                    }
                     <div class="tag--body">
-                        {renderTagAndTable(item)}
+                        {renderTable}
                     </div>
                 </div>
             );

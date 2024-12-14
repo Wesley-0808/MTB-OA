@@ -55,3 +55,39 @@ export type RequestHooksOptions = {
   error?: Function,
   complete?: Function
 }
+
+export interface PermissionsObject {
+  id?: number,
+  object?: string,
+  type?: "system" | "groupid" | "userid",
+  val?: string,
+  open?: number | boolean,
+  remark?: string | null,
+}
+
+export type PermissionsArray = PermissionsObject[]
+
+export interface equipmentStatusTips {
+  [key: number | string]: string | HTMLElement
+}
+
+export type equipmentStatus = {
+  id: number,
+  label: string,
+  theme: string,
+  n?: Array<number | "start"> | undefined,
+  tips?: equipmentStatusTips[]
+}[]
+
+export type userListObject = {
+  id?: number,
+  name: string,
+  class: string,
+  code: string,
+  password: string | null,
+  share_device: number,
+  group: number,
+  grade: string | number,
+  reg_time: string | Date,
+  join_time: string | Date,
+}

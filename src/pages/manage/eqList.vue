@@ -55,7 +55,7 @@
                 @sort-change="sortChange"
                 @select-change="handleTableSelectChange"
                 @page-change="onPageChange"
-                :pagination="table_Pagination"
+                :pagination="tablePagination"
                 :loading="table_Loading"
                 cellEmptyContent="-"
                 stripe
@@ -202,12 +202,15 @@
     </t-dialog>
 </template>
 
-<script setup lang="jsx">
-import { ref } from "vue";
+<script setup lang="tsx">
+import { computed, reactive, ref } from "vue";
 import { getCurrentInstance } from "vue";
+import { NotifyPlugin } from "tdesign-vue-next";
+import { equipmentStatus, equipmentStatusTips } from "@/types/type";
+
 const that = getCurrentInstance();
 
-const Add_Dialog_EqType = [
+const equipmentType = [
     {
         id: 0,
         label: "媒体部设备",
@@ -215,73 +218,146 @@ const Add_Dialog_EqType = [
     },
     {
         id: 1,
-        label: "晚修管理部部牌",
+        label: "其他-非媒体部",
         theme: "warning",
     },
 ];
 
-const Add_Dialog_EqStatus = [
+const equipmentStatus:equipmentStatus = [
     {
         id: 0,
         label: "正常",
         theme: "success",
+        n: [2],
     },
     {
         id: 1,
         label: "作为固定设备",
         theme: "primary",
+        n: [2,4],
     },
     {
         id: 2,
         label: "已借出",
         theme: "warning",
-        notchoose: true,
+        n: ["start",0,1,4],
     },
     {
         id: 3,
         label: "丢失",
         theme: "danger",
+        n: [4],
+        // TODO: 若从借出状态改为该状态 后端需要操作借出记录为丢失（归还）！！！
     },
     {
         id: 4,
         label: "清点中",
         theme: "primary",
-        notchoose: true,
+        n: ["start",2],
     },
 ];
 
-const Edit_Dialog_EqStatus = [
+const table_Columns = [
     {
-        id: 0,
-        label: "正常",
-        theme: "success",
-        not: [2],
+        colKey: "row-select",
+        type: "multiple",
+        width: 45,
     },
     {
-        id: 1,
-        label: "作为固定设备",
-        theme: "primary",
-        not: [2],
+        colKey: "id",
+        title: "id",
+        sortType: "all",
+        sorter: true,
+        width: "80",
     },
     {
-        id: 2,
-        label: "已借出",
-        theme: "warning",
-        not: [0, 1, 3, 4],
+        colKey: "eq_code",
+        title: "设备Code",
+        sortType: "all",
+        sorter: true,
+        width: "200",
     },
     {
-        id: 3,
-        label: "丢失",
-        theme: "danger",
-        not: [],
+        colKey: "eq_name",
+        title: "设备名",
+        sortType: "all",
+        sorter: true,
+        ellipsis: true,
+    },
+    { colKey: "model", title: "型号",sortType: "all", sorter: true },
+    { colKey: "sn", title: "设备sn码" },
+    { colKey: "ascription", title: "归属",sortType: "all", sorter: true },
+    {
+        colKey: "type",
+        title: "设备种类",
+        sortType: "all",
+        sorter: true,
+        cell: (h, { row }) => {
+            return (
+                <t-tag shape="round" theme={equipmentType.find(item => item.id === row.type)?.theme ?? "danger"} variant="light-outline">
+                    { equipmentType.find(item => item.id === row.type)?.label ?? "未知" }
+                </t-tag>
+            );
+        },
     },
     {
-        id: 4,
-        label: "清点中",
-        theme: "primary",
-        not: [2],
+        colKey: "status",
+        title: "状态",
+        sortType: "all",
+        sorter: true,
+        cell: (h, { row }) => {
+            const el = equipmentStatus.find(item => item.id === row.status);
+            return (
+                <t-tag
+                    shape="square"
+                    theme={ el.theme ?? "default" }
+                    variant="light-outline">
+                    { el.label ?? "未知状态"}
+                </t-tag>
+            );
+        },
     },
-];
+]
+const table_Data = ref([])
+const table_BackData = ref([])
+const table_Sort = reactive({
+    sortBy: "id",
+    descending: false,
+})
+const table_Loading = ref(false)
+const SelectData = ref([])
+const Dialog_Model = reactive({
+    AddEq: false,
+    EditEq: false,
+})
+const AddEqDialogFrom = reactive({
+    eq_name: "",
+    eq_code: "",
+    ascription: "",
+    model: "",
+    sn: "",
+    type: 0,
+    status: 0,
+})
+const EditEqDialogFrom = reactive({
+    id: "",
+    eq_name: "",
+    eq_code: "",
+    ascription: "",
+    model: "",
+    sn: "",
+    type: 0,
+    status: 0,
+})
+const tablePagination = computed(() => {
+    return {
+        current: 1,
+        pageSize: 25,
+        pageSizeOptions: [25, 75, 115, 150],
+        total: table_Data.value.length,
+        showJumper: true,
+    };
+})
 
 const TYPEvalueDisplay = (h, { value }) => {
     return (
@@ -298,153 +374,12 @@ const STATUSvalueDisplay = (h, { value }) => {
         </t-tag>
     );
 };
-</script>
 
-<script lang="jsx">
-import { NotifyPlugin } from "tdesign-vue-next";
-import { config } from "../../components/config";
-import { HTTPRequest } from "../../components/function/hooks";
-
-export default {
-    name: "EqList",
-    data() {
-        return {
-            table_Columns: [
-                {
-                    colKey: "row-select",
-                    type: "multiple",
-                    width: 45,
-                },
-                {
-                    colKey: "id",
-                    title: "id",
-                    sortType: "all",
-                    sorter: true,
-                    width: "80",
-                },
-                {
-                    colKey: "eq_code",
-                    title: "设备Code",
-                    sortType: "all",
-                    sorter: true,
-                    width: "200",
-                },
-                {
-                    colKey: "eq_name",
-                    title: "设备名",
-                    sortType: "all",
-                    sorter: true,
-                    ellipsis: true,
-                },
-                { colKey: "model", title: "型号",sortType: "all", sorter: true },
-                { colKey: "sn", title: "设备sn码" },
-                { colKey: "ascription", title: "归属",sortType: "all", sorter: true },
-                {
-                    colKey: "type",
-                    title: "设备种类",
-                    sortType: "all",
-                    sorter: true,
-                    cell: (h, { row }) => {
-                        return (
-                            <t-tag shape="round" theme={row.type === 0 ? "primary" : "success"} variant="light-outline">
-                                {row.type == 0 ? "部门设备" : "晚修管理部部牌"}
-                            </t-tag>
-                        );
-                    },
-                },
-                {
-                    colKey: "status",
-                    title: "状态",
-                    sortType: "all",
-                    sorter: true,
-                    cell: (h, { row }) => {
-                        return (
-                            <t-tag
-                                shape="square"
-                                theme={
-                                    row.status === 0
-                                        ? "success"
-                                        : row.status === 1
-                                        ? "primary"
-                                        : row.status === 2
-                                        ? "warning"
-                                        : row.status === 3
-                                        ? "danger"
-                                        : row.status === 4
-                                        ? "primary"
-                                        : "default"
-                                }
-                                variant="light-outline">
-                                {row.status === 0
-                                    ? "正常"
-                                    : row.status === 1
-                                    ? "作为固定设备"
-                                    : row.status === 2
-                                    ? "已借出"
-                                    : row.status === 3
-                                    ? "丢失"
-                                    : row.status === 4
-                                    ? "清点中"
-                                    : "数据错误"}
-                            </t-tag>
-                        );
-                    },
-                },
-            ],
-            table_Data: [],
-            table_BackData: [],
-            table_Sort: {
-                sortBy: "id",
-                descending: false,
-            },
-            table_Loading: false,
-            SelectData: [],
-            Dialog_Model: {
-                AddEq: false,
-                EditEq: false,
-            },
-            AddEqDialogFrom: {
-                eq_name: "",
-                eq_code: "",
-                ascription: "",
-                model: "",
-                sn: "",
-                type: 0,
-                status: 0,
-            },
-            EditEqDialogFrom: {
-                id: "",
-                eq_name: "",
-                eq_code: "",
-                ascription: "",
-                model: "",
-                sn: "",
-                type: 0,
-                status: 0,
-            },
-        };
-    },
-    computed: {
-        table_Pagination: function () {
-            return {
-                current: 1,
-                pageSize: 25,
-                pageSizeOptions: [25, 75, 115, 150],
-                total: this.table_Data.length,
-                showJumper: true,
-            };
-        },
-    },
-    mounted() {
-        this.InitTableData();
-    },
-
-    methods: {
         /**
          * @InitTableData
          * @初始化表格数据
          */
-        InitTableData() {
+         InitTableData() {
             this.$data.table_Loading = true;
             var that = this;
             var TOKEN = localStorage.getItem("token");
@@ -682,14 +617,18 @@ export default {
             }
         },
 
-        handleTableSelectChange(value, { selectedRowData }) {
-            this.$data.SelectData = selectedRowData;
-        },
-        onPageChange(pageInfo, context) {
-            this.table_Pagination.current = pageInfo.current;
-            this.table_Pagination.pageSize = pageInfo.pageSize;
-        },
-    },
+const handleTableSelectChange = (value, { selectedRowData }) => {
+    SelectData.value = selectedRowData;
+}
+const onPageChange = (pageInfo, context) => {
+    tablePagination.value.current = pageInfo.current;
+    tablePagination.value.pageSize = pageInfo.pageSize;
+}
+</script>
+
+<script lang="tsx">
+export default {
+    name: "EqList",
 };
 </script>
 
